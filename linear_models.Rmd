@@ -11,7 +11,60 @@ knitr::opts_chunk$set(
   out.width = "90%"
 )
 library(tidyverse)
+library(p8105.datasets)
 theme_set(theme_bw() + theme(legend.position = "bottom"))
 ```
 
 ## Examples
+
+AirBnB
+
+```{r}
+data("nyc_airbnb")
+
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(stars = review_scores_location / 2) %>% 
+  rename(boro = neighbourhood_group,
+         neighborhood = neighbourhood) %>% 
+  filter(boro != "Staten Island") %>% 
+  select(price, stars, boro, neighborhood, room_type)
+
+```
+
+Fit a model for price as an outcome 
+
+```{r}
+
+fit = lm(price ~ stars + boro, data = nyc_airbnb)
+
+```
+
+Look at summaries
+
+
+```{r}
+summary(fit)
+summary(fit)$coef
+coef(fit)
+fitted.values(fit)
+```
+
+Look at better summaries...
+
+```{r}
+fit %>% 
+  broom::glance()
+
+
+fit %>% 
+  broom::tidy()
+
+fit %>% 
+  broom::tidy() %>% 
+  select(term, estimate, p.value) %>% 
+  mutate(term = str_replace(term, "^boro", "Boro: ")) %>% 
+  knitr::kable(digits = 3)
+
+```
+
