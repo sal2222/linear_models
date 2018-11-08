@@ -47,15 +47,12 @@ Look at summaries
 summary(fit)
 summary(fit)$coef
 coef(fit)
-fitted.values(fit)
+# fitted.values(fit)
 ```
 
 Look at better summaries...
 
 ```{r}
-fit %>% 
-  broom::glance()
-
 
 fit %>% 
   broom::tidy()
@@ -67,4 +64,52 @@ fit %>%
   knitr::kable(digits = 3)
 
 ```
+
+Look at other summaries...
+```{r}
+fit %>% 
+  broom::glance()
+
+fit %>% 
+  broom::glance() %>% 
+  select(r.squared, adj.r.squared)
+```
+
+Be carefu with factor order...
+
+```{r}
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(boro = fct_infreq(boro),  # in order of frequency
+         room_type = fct_infreq(room_type))
+
+fit = lm(price ~ stars + boro, data = nyc_airbnb)
+
+fit %>% 
+  broom::tidy()
+```
+
+
+## Diagnostics
+
+Add residuals to dataset
+
+```{r}
+modelr::add_residuals(nyc_airbnb, fit)
+
+modelr::add_predictions(nyc_airbnb, fit)
+
+
+modelr::add_residuals(nyc_airbnb, fit) %>% 
+  ggplot(aes(x = boro, y = resid)) + geom_boxplot()
+
+modelr::add_residuals(nyc_airbnb, fit) %>% 
+  ggplot(aes(x = stars, y = resid)) + geom_point()
+
+nyc_airbnb %>% 
+  modelr::add_predictions(fit) %>% 
+  ggplot(aes(x = stars, y = pred, color = boro)) + geom_point()
+
+```
+
 
